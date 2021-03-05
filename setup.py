@@ -1,14 +1,18 @@
 import os
 
+from setuptools import setup
+
+here = os.path.abspath(os.path.dirname(__file__))
+
 packages = ['consign']
 
 requires = []
 
 about = {}
-with open(os.path.join(here, 'consign', '__version__.py'), 'r', 'utf-8') as f:
+with open(os.path.join(here, 'consign', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
-with open('README.md', 'r', 'utf-8') as f:
+with open('README.md', 'r') as f:
     readme = f.read()
 
 setup(
