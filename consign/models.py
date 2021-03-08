@@ -1,7 +1,11 @@
 import os
 import sys
+import json
 import errno
 import tempfile
+
+from .exceptions import (
+    InvalidDataType, InvalidPath, ConsignWarning)
 
 # Sadly, Python fails to provide the following magic number for us.
 # Windows-specific error code indicating an invalid pathname.
@@ -69,10 +73,21 @@ class PreparedConsignment():
     def prepare_json(self, data):
         """Verifies data is valid JSON.
         """
-        is_json = isinstance(data, dict)
-        if not is_json:
-            raise InvalidFormat("Data is not a valid JSON object.")
+        if not isinstance(data, (list, dict)) or not self.is_json_safe(data):
+            raise InvalidDataType("Data is not a valid JSON object.")
         self.data = data
+
+
+    def is_json_safe(self, data): 
+        if data is None:
+            return True 
+        elif isinstance(data, (bool, int, float, str)): 
+            return True 
+        elif isinstance(data, (tuple, list)): 
+            return all(self.is_json_safe(x) for x in data) 
+        elif isinstance(data, dict):
+            return all(isinstance(k, str) and self.is_json_safe(v) for k, v in data.items())
+        return False 
 
 
     def prepare_csv(self, data, delimiter):
@@ -80,11 +95,11 @@ class PreparedConsignment():
         """
         is_tabular = isinstance(data, list)
         if not is_tabular:
-            raise InvalidFormat("Data is not tabular.")
+            raise InvalidDataType("Data is not tabular.")
 
         is_free = not(any(delimiter in column for row in data for column in row))
         if not is_free:
-            raise InvalidFormat("Delimiter %s is used in data" % (delimiter))
+            raise ConsignWarning("Delimiter %s is used in data" % (delimiter))
 
         self.data = data
         self.delimiter = delimiter
@@ -182,7 +197,7 @@ class PreparedConsignment():
         """
         given_extension = pathname.split(".")[-1]
         if not given_extension == method.lower():
-            raise InvalidFormat("Wrong output file extension. Should be '%s' instead of '%s'" % (method.lower(), given_extension))
+            raise InvalidPath("Wrong file extension. Should be '%s' instead of '%s'" % (method.lower(), given_extension))
         return True
 
 
