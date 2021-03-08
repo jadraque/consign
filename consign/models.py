@@ -17,12 +17,13 @@ class Consignment():
         method=None, data=None, url=None, delimiter=None):
 
         # Default empty dicts for optional dict params.
-        delimiter = ',' if delimiter is None else data
+        delimiter = ',' if delimiter is None else delimiter
 
         self.method = method
         self.data = data
         self.url = url
         self.delimiter = delimiter
+        print("DELIMITEEEEEEEEEEEEEEEEER >> " + delimiter)
 
 
 class PreparedConsignment():
@@ -56,11 +57,10 @@ class PreparedConsignment():
 
     def prepare_data(self, method, data, delimiter):
 
-        if method is "CSV":
-            delimiter = kwargs.get("delimiter", ",")
+        if method == "CSV":
             self.prepare_csv(data, delimiter)
         
-        elif method is "JSON":
+        elif method == "JSON":
             self.prepare_json(data)
 
 
@@ -70,6 +70,7 @@ class PreparedConsignment():
         is_json = isinstance(data, dict)
         if not is_json:
             raise InvalidFormat("Data is not a valid JSON object.")
+        self.data = data
 
 
     def prepare_csv(self, data, delimiter):
@@ -79,14 +80,18 @@ class PreparedConsignment():
         if not is_tabular:
             raise InvalidFormat("Data is not tabular.")
 
-        is_free = any(delimiter in column for row in data for column in row)
+        is_free = not(any(delimiter in column for row in data for column in row))
         if not is_free:
-            raise ContentWarning("Delimiter %s is used in data" % (delimiter))
+            raise InvalidFormat("Delimiter %s is used in data" % (delimiter))
+
+        self.data = data
+        self.delimiter = delimiter
 
 
     def prepare_url(self, method, url):
         if method in ["CSV", "JSON"]:
             self.prepare_pathname(url)
+            self.url = url
 
 
     def is_pathname_valid(self, pathname: str) -> bool:

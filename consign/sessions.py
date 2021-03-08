@@ -2,6 +2,7 @@ import csv
 import json
 
 from .models import Consignment, PreparedConsignment
+from .adapters import StoreAdapter
 
 
 class Session():
@@ -56,8 +57,29 @@ class Session():
 
 
     def store(self, luggage):
-        """Send a given PreparedConsignment.
+        """Stores a given PreparedConsignment.
         """
+
+        # Get the appropriate adapter to use
+        adapter = StoreAdapter(
+            method=luggage.method
+        )
+
+        # Start time (approximately) of the request
+        # start = preferred_clock()
+
+        # Store the luggage
+        r = adapter.store(
+            data=luggage.data,
+            url=luggage.url,
+            delimiter=luggage.delimiter
+        )
+
+        # Total elapsed time of the request (approximately)
+        # elapsed = preferred_clock() - start
+        # r.elapsed = timedelta(seconds=elapsed)
+
+        return r
 
 
     def close(self):

@@ -15,7 +15,7 @@ def consign(method, data, url, **kwargs):
         return session.consign(method=method, data=data, url=url, **kwargs)
 
 
-def csv(data, url, delimiter=",", **kwargs):
+def csv(data, url, **kwargs):
     r"""Stores a CSV file locally.
 
     :param data: data for the new :class:`Request` object.
