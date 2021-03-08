@@ -9,7 +9,16 @@ class Session():
     """
 
     def __init__(self):
-    
+        pass
+
+
+    def __enter__(self):
+        return self
+
+
+    def __exit__(self, *args):
+        self.close()
+
 
     def prepare_consignment(self, consign):
         """
@@ -22,6 +31,7 @@ class Session():
             delimiter=consign.delimiter
         )
         return p
+
 
     def consign(self, method, data, url,
             delimiter=None):
@@ -48,3 +58,10 @@ class Session():
     def store(self, luggage):
         """Send a given PreparedConsignment.
         """
+
+
+    def close(self):
+        """Closes all adapters and as such the session"""
+        # for v in self.adapters.values():
+        #     v.close()
+        pass

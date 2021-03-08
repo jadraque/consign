@@ -1,4 +1,7 @@
-import tempfile, errno, os
+import os
+import sys
+import errno
+import tempfile
 
 # Sadly, Python fails to provide the following magic number for us.
 # Windows-specific error code indicating an invalid pathname.
@@ -46,6 +49,11 @@ class PreparedConsignment():
         # such as OAuth to work on a fully prepared request.
 
 
+    def prepare_method(self, method):
+        """Prepares the given Consignment method."""
+        self.method = method.upper()
+
+
     def prepare_data(self, method, data, delimiter):
 
         if method is "CSV":
@@ -78,7 +86,7 @@ class PreparedConsignment():
 
     def prepare_url(self, method, url):
         if method in ["CSV", "JSON"]:
-            self.prepare_pathname(location)
+            self.prepare_pathname(url)
 
 
     def is_pathname_valid(self, pathname: str) -> bool:
