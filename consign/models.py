@@ -17,13 +17,13 @@ class Consignment():
         method=None, data=None, url=None, delimiter=None):
 
         # Default empty dicts for optional dict params.
-        delimiter = ',' if delimiter is None else delimiter
+        default_delimiter = ',' if method == "CSV" else None
+        delimiter = default_delimiter if delimiter is None else delimiter
 
         self.method = method
         self.data = data
         self.url = url
         self.delimiter = delimiter
-        print("DELIMITEEEEEEEEEEEEEEEEER >> " + delimiter)
 
 
 class PreparedConsignment():
@@ -56,6 +56,8 @@ class PreparedConsignment():
 
 
     def prepare_data(self, method, data, delimiter):
+
+        self.delimiter = delimiter
 
         if method == "CSV":
             self.prepare_csv(data, delimiter)
@@ -90,7 +92,7 @@ class PreparedConsignment():
 
     def prepare_url(self, method, url):
         if method in ["CSV", "JSON"]:
-            self.prepare_pathname(url)
+            self.prepare_pathname(method, url)
             self.url = url
 
 
@@ -175,7 +177,16 @@ class PreparedConsignment():
         return os.access(dirname, os.W_OK)
 
 
-    def prepare_pathname(self, pathname: str) -> bool:
+    def is_path_extension_adecuate(self, method, pathname):
+        """
+        """
+        given_extension = pathname.split(".")[-1]
+        if not given_extension == method.lower():
+            raise InvalidFormat("Wrong output file extension. Should be '%s' instead of '%s'" % (method.lower(), given_extension))
+        return True
+
+
+    def prepare_pathname(self, method, pathname: str) -> bool:
         '''
         Source: https://stackoverflow.com/a/34102855
         `True` if the passed pathname is a valid pathname for the current OS _and_
@@ -187,7 +198,8 @@ class PreparedConsignment():
             # To prevent "os" module calls from raising undesirable exceptions on
             # invalid pathnames, is_pathname_valid() is explicitly called first.
             return self.is_pathname_valid(pathname) and (
-                os.path.exists(pathname) or self.is_path_creatable(pathname))
+                os.path.exists(pathname) or self.is_path_creatable(pathname)
+                ) and self.is_path_extension_adecuate(method, pathname)
         # Report failure on non-fatal filesystem complaints (e.g., connection
         # timeouts, permissions issues) implying this path to be inaccessible. All
         # other exceptions are unrelated fatal issues and should not be caught here.
