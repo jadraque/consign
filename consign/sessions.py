@@ -29,13 +29,14 @@ class Session():
             method=consign.method.upper(),
             data=consign.data,
             url=consign.url,
-            delimiter=consign.delimiter
+            delimiter=consign.delimiter,
+            update=consign.update
         )
         return p
 
 
     def consign(self, method, data, url,
-            delimiter=None):
+            delimiter=None, update=False):
         """Constructs a :class:`Consign <Consign>`, prepares it and stores it.
         """
 
@@ -44,7 +45,8 @@ class Session():
             method=method.upper(),
             data=data,
             url=url,
-            delimiter=delimiter
+            delimiter=delimiter,
+            update=update
         )
 
         # Prepares the Consignment.
@@ -72,7 +74,8 @@ class Session():
         r = adapter.store(
             data=luggage.data,
             url=luggage.url,
-            delimiter=luggage.delimiter
+            delimiter=luggage.delimiter,
+            update=luggage.update
         )
 
         # Total elapsed time of the request (approximately)
