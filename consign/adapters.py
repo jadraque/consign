@@ -10,11 +10,11 @@ class StoreAdapter():
         self.method = method
 
 
-    def store(self, data, url, delimiter, update):
+    def store(self, data, url, delimiter, overwrite):
         if self.method == 'CSV':
             self.to_csv(data, url, delimiter)
         elif self.method == 'JSON':
-            self.to_json(data, url, update)
+            self.to_json(data, url, overwrite)
 
 
     def to_csv(self, data, url, delimiter):
@@ -24,8 +24,8 @@ class StoreAdapter():
                 writer.writerow(row)
 
 
-    def to_json(self, data, url, update):
-        if update:
+    def to_json(self, data, url, overwrite):
+        if not overwrite:
             d = self.load_json(url)
             data.update(d)
         with open(url, 'w') as output_file:

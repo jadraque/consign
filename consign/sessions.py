@@ -30,13 +30,12 @@ class Session():
             data=consign.data,
             url=consign.url,
             delimiter=consign.delimiter,
-            update=consign.update
+            overwrite=consign.overwrite
         )
         return p
 
 
-    def consign(self, method, data, url,
-            delimiter=None, update=False):
+    def consign(self, method, data, url, delimiter=None, overwrite=True):
         """Constructs a :class:`Consign <Consign>`, prepares it and stores it.
         """
 
@@ -46,7 +45,7 @@ class Session():
             data=data,
             url=url,
             delimiter=delimiter,
-            update=update
+            overwrite=overwrite
         )
 
         # Prepares the Consignment.
@@ -75,7 +74,7 @@ class Session():
             data=luggage.data,
             url=luggage.url,
             delimiter=luggage.delimiter,
-            update=luggage.update
+            overwrite=luggage.overwrite
         )
 
         # Total elapsed time of the request (approximately)

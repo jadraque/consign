@@ -20,7 +20,7 @@ class Consignment():
     """
 
     def __init__(self,
-        method=None, data=None, url=None, delimiter=None, update=False):
+        method=None, data=None, url=None, delimiter=None, overwrite=True):
 
         # Default empty dicts for optional dict params.
         default_delimiter = ',' if method == "CSV" else None
@@ -30,7 +30,7 @@ class Consignment():
         self.data = data
         self.url = url
         self.delimiter = delimiter
-        self.update = update
+        self.overwrite = overwrite
 
 
 class PreparedConsignment():
@@ -46,13 +46,13 @@ class PreparedConsignment():
 
 
     def prepare(self,
-        method=None, data=None, url=None, delimiter=None, update=False):
+        method=None, data=None, url=None, delimiter=None, overwrite=None):
         """Prepares the entire consignment with the given parameters."""
 
         self.prepare_method(method)
         self.prepare_data(method, data, delimiter)
         self.prepare_url(method, url)
-        if update: self.prepare_file(method, url)
+        self.prepare_file(method, url, overwrite)
 
         # Note that prepare_auth must be last to enable authentication schemes
         # such as OAuth to work on a fully prepared request.
@@ -226,10 +226,11 @@ class PreparedConsignment():
             return False
 
 
-    def prepare_file(self, method, url):
+    def prepare_file(self, method, url, overwrite):
         '''
         If file is to be updated, it needs to exist.
         '''
-        if method in ['CSV', 'JSON']:
+        self.overwrite = True if not overwrite else overwrite
+        if not self.overwrite and method in ['CSV', 'JSON']:
             if not isfile(url):
                 raise InvalidPath('File to be updated does NOT exist.')
