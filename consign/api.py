@@ -31,3 +31,39 @@ def json(data, url, **kwargs):
     :param url: path for the new :class:`Request` object.
     """
     return consign("json", data, url, **kwargs)
+
+
+def txt(data, url, **kwargs):
+    r"""Stores a TXT file locally.
+
+    :param data: data for the new :class:`Request` object.
+    :param url: path for the new :class:`Request` object.
+    """
+    return consign("txt", data, url, **kwargs)
+
+
+def html(data, url, **kwargs):
+    r"""Stores a HTML file locally.
+
+    :param data: data for the new :class:`Request` object.
+    :param url: path for the new :class:`Request` object.
+    """
+    return consign("html", data, url, **kwargs)
+
+
+def pdf(data, url, **kwargs):
+    r"""Stores a PDF file locally.
+
+    :param data: data for the new :class:`Request` object.
+    :param url: path for the new :class:`Request` object.
+    """
+    return consign("pdf", data, url, **kwargs)
+
+
+def img(data, url, **kwargs):
+    r"""Stores an image locally.
+
+    :param data: data for the new :class:`Request` object.
+    :param url: path for the new :class:`Request` object.
+    """
+    return consign("img", data, url, **kwargs)

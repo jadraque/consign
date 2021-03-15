@@ -15,9 +15,9 @@ ERROR_INVALID_NAME = 123
 
 
 class Consignment():
-    """A user-created :class:`Consignment <Consignment>` object.
+    '''A user-created :class:`Consignment <Consignment>` object.
     Used to prepare a :class:`PreparedConsignment <PreparedConsignment>`, which is sent to the server.
-    """
+    '''
 
     def __init__(self,
         method=None, data=None, url=None, delimiter=None, overwrite=True):
@@ -34,12 +34,12 @@ class Consignment():
 
 
 class PreparedConsignment():
-    """The fully mutable :class:`PreparedConsign <PreparedConsign>` object,
+    '''The fully mutable :class:`PreparedConsign <PreparedConsign>` object,
     containing the exact bytes that will be sent to the server.
     Instances are generated from a :class:`Request <Request>` object, and
     should not be instantiated manually; doing so may produce undesirable
     effects.
-    """
+    '''
 
     def __init__(self):
         pass
@@ -47,36 +47,36 @@ class PreparedConsignment():
 
     def prepare(self,
         method=None, data=None, url=None, delimiter=None, overwrite=None):
-        """Prepares the entire consignment with the given parameters."""
+        '''Prepares the entire consignment with the given parameters.'''
 
         self.prepare_method(method)
-        self.prepare_data(method, data, delimiter)
-        self.prepare_url(method, url)
-        self.prepare_file(method, url, overwrite)
+        self.prepare_data(data, delimiter)
+        self.prepare_url(url)
+        self.prepare_file(url, overwrite)
 
         # Note that prepare_auth must be last to enable authentication schemes
         # such as OAuth to work on a fully prepared request.
 
 
     def prepare_method(self, method):
-        """Prepares the given Consignment method."""
+        '''Prepares the given Consignment method.'''
         self.method = method.upper()
 
 
-    def prepare_data(self, method, data, delimiter):
+    def prepare_data(self, data, delimiter):
 
         self.delimiter = delimiter
 
-        if method == "CSV":
+        if self.method == "CSV":
             self.prepare_csv(data, delimiter)
         
-        elif method == "JSON":
+        elif self.method == "JSON":
             self.prepare_json(data)
 
 
     def prepare_json(self, data):
-        """Verifies data is valid JSON.
-        """
+        '''Verifies data is valid JSON.
+        '''
         if not isinstance(data, (list, dict)) or not self.is_json_safe(data):
             raise InvalidDataType("Data is not a valid JSON object.")
         self.data = data
@@ -95,8 +95,9 @@ class PreparedConsignment():
 
 
     def prepare_csv(self, data, delimiter):
-        """Verifies data is tabular and free of delimiter characters.
-        """
+        '''
+        Verifies data is tabular and free of delimiter characters.
+        '''
         is_tabular = isinstance(data, list)
         if not is_tabular:
             raise InvalidDataType("Data is not tabular.")
@@ -109,9 +110,13 @@ class PreparedConsignment():
         self.delimiter = delimiter
 
 
-    def prepare_url(self, method, url):
-        if method in ["CSV", "JSON"]:
-            self.prepare_pathname(method, url)
+    def prepare_url(self, url):
+        '''
+        Verifies path existance, user permissions to write, and file extension
+        matches the data format.
+        '''
+        if self.method in ['CSV', 'JSON', 'PDF', 'HTML', 'TXT']:
+            self.prepare_pathname(url)
             self.url = url
 
 
@@ -196,16 +201,17 @@ class PreparedConsignment():
         return os.access(dirname, os.W_OK)
 
 
-    def is_path_extension_adecuate(self, method, pathname):
-        """
-        """
+    def is_path_extension_adecuate(self, pathname):
+        '''
+        '''
+        given_method = self.method.lower()
         given_extension = pathname.split(".")[-1]
-        if not given_extension == method.lower():
-            raise InvalidPath("Wrong file extension. Should be '%s' instead of '%s'" % (method.lower(), given_extension))
+        if not given_extension == given_method:
+            raise InvalidPath("Wrong file extension. Should be '%s' instead of '%s'" % (given_method, given_extension))
         return True
 
 
-    def prepare_pathname(self, method, pathname: str) -> bool:
+    def prepare_pathname(self, pathname: str) -> bool:
         '''
         Source: https://stackoverflow.com/a/34102855
         'True' if the passed pathname is a valid pathname for the current OS _and_
@@ -216,9 +222,14 @@ class PreparedConsignment():
         try:
             # To prevent "os" module calls from raising undesirable exceptions on
             # invalid pathnames, is_pathname_valid() is explicitly called first.
-            return self.is_pathname_valid(pathname) and (
-                os.path.exists(pathname) or self.is_path_creatable(pathname)
-                ) and self.is_path_extension_adecuate(method, pathname)
+            if self.method == 'IMG':
+                return self.is_pathname_valid(pathname) and (
+                    os.path.exists(pathname) or self.is_path_creatable(pathname)
+                    )
+            else:
+                return self.is_pathname_valid(pathname) and (
+                    os.path.exists(pathname) or self.is_path_creatable(pathname)
+                    ) and self.is_path_extension_adecuate(pathname)
         # Report failure on non-fatal filesystem complaints (e.g., connection
         # timeouts, permissions issues) implying this path to be inaccessible. All
         # other exceptions are unrelated fatal issues and should not be caught here.
@@ -226,11 +237,11 @@ class PreparedConsignment():
             return False
 
 
-    def prepare_file(self, method, url, overwrite):
+    def prepare_file(self, url, overwrite):
         '''
         If file is to be updated, it needs to exist.
         '''
         self.overwrite = True if not overwrite else overwrite
-        if not self.overwrite and method in ['CSV', 'JSON']:
+        if not self.overwrite and self.method in ['CSV', 'JSON']:
             if not isfile(url):
                 raise InvalidPath('File to be updated does NOT exist.')
