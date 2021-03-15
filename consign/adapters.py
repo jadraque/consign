@@ -40,7 +40,7 @@ class StoreAdapter():
         '''
         Prints binary data into a binary file (ie. '.pdf').
         '''
-        with open(url, "wb") as output_file:
+        with open(url, 'wb') as output_file:
             output_file.write(data)
 
 
@@ -48,7 +48,7 @@ class StoreAdapter():
         '''
         Prints text data into a text file (ie. '.txt', '.html').
         '''
-        with open(output_path, "w") as output_file:
+        with open(output_path, 'w') as output_file:
             output_file.write(data)
 
 
