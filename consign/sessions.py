@@ -6,8 +6,8 @@ from .adapters import StoreAdapter
 
 
 class Session():
-    """
-    """
+    '''
+    '''
 
     def __init__(self):
         pass
@@ -22,8 +22,8 @@ class Session():
 
 
     def prepare_consignment(self, consign):
-        """
-        """
+        '''
+        '''
         p = PreparedConsignment()
         p.prepare(
             method=consign.method.upper(),
@@ -36,8 +36,8 @@ class Session():
 
 
     def consign(self, method, data, url, delimiter=None, overwrite=True):
-        """Constructs a :class:`Consign <Consign>`, prepares it and stores it.
-        """
+        '''Constructs a :class:`Consign <Consign>`, prepares it and stores it.
+        '''
 
         # Creates the Consignment.
         csgn = Consignment(
@@ -58,8 +58,8 @@ class Session():
 
 
     def store(self, luggage):
-        """Stores a given PreparedConsignment.
-        """
+        '''Stores a given PreparedConsignment.
+        '''
 
         # Get the appropriate adapter to use
         adapter = StoreAdapter(
@@ -85,7 +85,7 @@ class Session():
 
 
     def close(self):
-        """Closes all adapters and as such the session"""
+        '''Closes all adapters and as such the session'''
         # for v in self.adapters.values():
         #     v.close()
         pass
