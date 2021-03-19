@@ -1,4 +1,4 @@
 env/
 dist/
+__pycache__/
 consign.egg-info/
-
