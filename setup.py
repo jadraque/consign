@@ -6,7 +6,10 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 packages = ['consign']
 
-requires = []
+requires = [
+    'azure-storage-blob>=12.8.0',
+    'azure-data-tables>=12.0.0'
+]
 
 about = {}
 with open(os.path.join(here, 'consign', '__version__.py'), 'r') as f:
