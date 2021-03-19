@@ -58,7 +58,7 @@ class PreparedConsignment():
 
         self.prepare_method(method)
         self.prepare_data(data, delimiter)
-        self.prepare_path(path)
+        self.prepare_path(path, provider)
         self.prepare_file(path, overwrite)
 
         self.prepare_provider(provider)
