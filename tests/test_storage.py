@@ -1,4 +1,9 @@
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
 import unittest
+import TestRunner
 
 from os import remove
 from os.path import isfile
@@ -7,6 +12,7 @@ from consign.adapters import StoreAdapter
 
 
 class TestStringMethods(unittest.TestCase):
+    
 
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self, *args, **kwargs)
@@ -60,5 +66,4 @@ class TestStringMethods(unittest.TestCase):
         except: pass
 
 
-if __name__ == '__main__':
-    unittest.main()
+TestRunner.main()
