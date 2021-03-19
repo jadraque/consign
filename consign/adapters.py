@@ -1,6 +1,12 @@
 import csv
 import json
 
+# https://pypi.org/project/azure-storage-blob/
+from azure.storage.blob import BlobClient
+# https://pypi.org/project/azure-data-tables/
+from azure.data.tables import TableServiceClient
+
+
 
 class StoreAdapter():
     '''
@@ -10,7 +16,8 @@ class StoreAdapter():
         self.method = method
 
 
-    def store(self, data, url, delimiter, overwrite):
+    def store(self, data, url, delimiter, overwrite, provider,
+              connection_string, container_name):
         if self.method == 'CSV':
             self.to_csv(data, url, delimiter)
         elif self.method == 'JSON':
@@ -19,6 +26,10 @@ class StoreAdapter():
             self.to_text_file(data, url)
         elif self.method == ['PDF', 'IMG']:
             self.to_binary_file(data, url)
+        elif self.method == 'BLOB':
+            self.to_blob(provider, connection_string, container_name, data, url)
+        elif self.method == 'TABLE':
+            self.to_table(provider, connection_string, data, url)
 
 
     def to_csv(self, data, url, delimiter):
@@ -50,6 +61,30 @@ class StoreAdapter():
         '''
         with open(output_path, 'w') as output_file:
             output_file.write(data)
+
+
+    def to_blob(self, provider, connection_string, container_name, data, path):
+        '''
+        Uploads a Blob into the target container.
+        '''
+        if provider == 'azure':
+            blob = BlobClient.from_connection_string(
+                conn_str=connection_string,
+                container_name=container_name,
+                blob_name=path
+            )
+            blob.upload_blob(data)
+
+
+    def to_table(self, provider, connection_string, data, url):
+        '''
+        '''
+        if provider == 'azure':
+            table = TableServiceClient.from_connection_string(
+                conn_str=connection_string)
+            table_client = table_service_client.get_table_client(table_name=url)
+            for row in data:
+                table_client.create_entity(entity=row)
 
 
     def load_json(self, url):

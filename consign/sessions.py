@@ -35,7 +35,8 @@ class Session():
         return p
 
 
-    def consign(self, method, data, url, delimiter=None, overwrite=True):
+    def consign(self, method, data, url, delimiter=None, overwrite=True,
+                provider=None, connection_string=None, container_name=None):
         '''Constructs a :class:`Consign <Consign>`, prepares it and stores it.
         '''
 
@@ -45,7 +46,10 @@ class Session():
             data=data,
             url=url,
             delimiter=delimiter,
-            overwrite=overwrite
+            overwrite=overwrite,
+            provider=provider,
+            connection_string=connection_string,
+            container_name=container_name
         )
 
         # Prepares the Consignment.
@@ -74,7 +78,10 @@ class Session():
             data=luggage.data,
             url=luggage.url,
             delimiter=luggage.delimiter,
-            overwrite=luggage.overwrite
+            overwrite=luggage.overwrite,
+            provider=luggage.provider,
+            connection_string=luggage.connection_string,
+            container_name=luggage.container_name
         )
 
         # Total elapsed time of the request (approximately)

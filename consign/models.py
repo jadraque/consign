@@ -7,7 +7,8 @@ import tempfile
 from os.path import isfile
 
 from .exceptions import (
-    InvalidDataType, InvalidPath, ConsignWarning)
+    InvalidDataType, InvalidPath, InvalidCloudProvider, InvalidConnectionString,
+    InvalidContainerName, InvalidBlobName, InvalidTableName, ConsignWarning)
 
 # Sadly, Python fails to provide the following magic number for us.
 # Windows-specific error code indicating an invalid pathname.
@@ -20,17 +21,22 @@ class Consignment():
     '''
 
     def __init__(self,
-        method=None, data=None, url=None, delimiter=None, overwrite=True):
+        method=None, data=None, url=None, delimiter=None, overwrite=True,
+        provider=None, connection_string=None, container_name=None):
 
         # Default empty dicts for optional dict params.
         default_delimiter = ',' if method == 'CSV' else None
-        delimiter = default_delimiter if delimiter is None else delimiter
+        delimiter = default_delimiter if delimiter == None else delimiter
 
         self.method = method
         self.data = data
         self.url = url
         self.delimiter = delimiter
         self.overwrite = overwrite
+        self.provider = provider.strip().lower() if provider
+        self.connection_string = connection_string
+        self.container_name = container_name
+
 
 
 class PreparedConsignment():
@@ -46,7 +52,8 @@ class PreparedConsignment():
 
 
     def prepare(self,
-        method=None, data=None, url=None, delimiter=None, overwrite=None):
+        method=None, data=None, url=None, delimiter=None, overwrite=None,
+        provider=None, connection_string=None, container_name=None):
         '''Prepares the entire consignment with the given parameters.'''
 
         self.prepare_method(method)
@@ -54,8 +61,78 @@ class PreparedConsignment():
         self.prepare_url(url)
         self.prepare_file(url, overwrite)
 
+        self.prepare_provider(provider)
+        self.prepare_connection_string(provider, connection_string)
+        self.prepare_container_name(provider, container_name)
+
         # Note that prepare_auth must be last to enable authentication schemes
         # such as OAuth to work on a fully prepared request.
+
+
+    def prepare_provider(self, provider):
+        '''
+        Checks if given provider is listed and valid.
+        '''
+        listed_providers = ['azure']
+        if provider and provider not in listed_providers:
+            msg = '"{}" is not a valid cloud provider'.format(provider)
+            raise InvalidCloudProvider(msg)
+        self.provider = provider
+
+
+    def prepare_connection_string(self, provider, connection_string):
+        '''
+        As required by Azure in their docs:
+        https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string
+        '''
+        msg = None
+        if connection_string and provider == 'azure':
+            BASE_MESSAGE = 'In Azure Storage, '
+
+            connection_dic = {
+                item.split('=')[0]:item.split('=')[1] for item in connection_string.split(';')}
+            protocol = connection_dic.get('DefaultEndpointsProtocol', None)
+            account_name = connection_dic.get('AccountName', None)
+            account_key = connection_dic.get('AccountKey', None)
+
+            if not protocol:
+                msg = 'the connection protocol, HTTPS or HTTP, must be indicated using "DefaultEndpointsProtocol".'
+            elif not (protocol == 'http' or  protocol == 'https'):
+                msg = 'the connection protocol must be HTTP or HTTPS, indicated in lowercase.'
+
+            if not account_name:
+                msg = 'your storage account name must be indicated using "AccountName".'
+            
+            if not account_key:
+                msg = 'your storage account access key must be indicated using "AccountKey".'
+
+        if msg: raise InvalidConnectionString(BASE_MESSAGE + msg)
+
+        self.connection_string = connection_string
+
+
+    def prepare_container_name(self, provider, container_name):
+        '''
+        As required by Azure in their docs:
+        https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names
+        '''
+        msg = None
+        if container_name and provider == 'azure':
+            BASE_MESSAGE = 'In Azure Storage, '
+            
+            for character in container_name:
+                if not (character.islower() or character.isdigit() or character == '-'):
+                    msg = 'container names can only contain lowercase letters, numbers or dashes ("-").'
+            
+            if '--' in container_name:
+                msg = 'consecutive dashes ("--") are not permitted in container names.'
+            
+            if len(container_name) < 3 or len(container_name) > 63:
+                msg = 'container names must be from 3 through 63 characters long.'
+
+        if msg: raise InvalidContainerName(BASE_MESSAGE + msg)
+
+        self.container_name = container_name
 
 
     def prepare_method(self, method):
@@ -110,14 +187,65 @@ class PreparedConsignment():
         self.delimiter = delimiter
 
 
-    def prepare_url(self, url):
+    def prepare_url(self, url, provider):
         '''
         Verifies path existance, user permissions to write, and file extension
         matches the data format.
         '''
         if self.method in ['CSV', 'JSON', 'PDF', 'HTML', 'TXT']:
             self.prepare_pathname(url)
-            self.url = url
+        elif self.method == 'BLOB':
+            self.prepare_blob_name(provider, url)
+        elif self.method == 'TABLE':
+            self.prepare_table_name(provider, url)
+        self.url = url
+
+
+    def prepare_blob_name(self, provider, url):
+        '''
+        As required by Azure in their docs:
+        https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#blob-names
+        '''
+        msg = None
+        if provider == 'azure':
+            
+            BASE_MESSAGE = 'In Azure Storage, '
+
+            if len(url) < 1 or len(url) > 1024:
+                msg = 'blob names must be from 1 through 1024 characters long.'
+            
+            path_segments = url.split('/')
+            if len(path_segments) > 254:
+                msg = 'the number of path segments comprising the blob name cannot exceed 254.'
+
+            for path_segment in path_segments:
+                if path_segment.endswith('.'):
+                    msg = "blob names' path segments should not end with a dot."
+
+            if url.endswith('/'):
+                msg = 'blob names should not end with a forward slash.'
+        
+        if msg: raise InvalidBlobName(BASE_MESSAGE + msg)
+
+
+    def prepare_table_name(self, provider, url):
+        '''
+        '''
+        msg = None
+        if url and provider == 'azure':
+            BASE_MESSAGE = 'In Azure Storage, '
+            
+            for character in url:
+                if not (character.isalpha() or character.isdigit()):
+                    msg = 'table names can only contain alphanumeric characters.'
+            
+            if url[0].isdigit():
+                msg = 'table names may not begin with a numeric character.'
+            
+            if len(url) < 3 or len(url) > 63:
+                msg = 'table names must be from 3 through 63 characters long.'
+
+        if msg: raise InvalidTableName(BASE_MESSAGE + msg)
 
 
     def is_pathname_valid(self, pathname: str) -> bool:
