@@ -33,7 +33,7 @@ class Consignment():
         self.path = path
         self.delimiter = delimiter
         self.overwrite = overwrite
-        self.provider = provider.strip().lower() if provider
+        self.provider = provider.strip().lower() if provider else None
         self.connection_string = connection_string
         self.container_name = container_name
 
@@ -335,7 +335,7 @@ class PreparedConsignment():
         given_method = self.method.lower()
         given_extension = pathname.split('.')[-1]
         if not given_extension == given_method:
-            raise InvalidPath('Wrong file extension. Should be '%s' instead of '%s'' % (given_method, given_extension))
+            raise InvalidPath('Wrong file extension. Should be "%s" instead of "%s"' % (given_method, given_extension))
         return True
 
 
