@@ -28,14 +28,14 @@ class Session():
         p.prepare(
             method=consign.method.upper(),
             data=consign.data,
-            url=consign.url,
+            path=consign.path,
             delimiter=consign.delimiter,
             overwrite=consign.overwrite
         )
         return p
 
 
-    def consign(self, method, data, url, delimiter=None, overwrite=True,
+    def consign(self, method, data, path, delimiter=None, overwrite=True,
                 provider=None, connection_string=None, container_name=None):
         '''Constructs a :class:`Consign <Consign>`, prepares it and stores it.
         '''
@@ -44,7 +44,7 @@ class Session():
         csgn = Consignment(
             method=method.upper(),
             data=data,
-            url=url,
+            path=path,
             delimiter=delimiter,
             overwrite=overwrite,
             provider=provider,
@@ -76,7 +76,7 @@ class Session():
         # Store the luggage
         r = adapter.store(
             data=luggage.data,
-            url=luggage.url,
+            path=luggage.path,
             delimiter=luggage.delimiter,
             overwrite=luggage.overwrite,
             provider=luggage.provider,

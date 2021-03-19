@@ -16,46 +16,46 @@ class StoreAdapter():
         self.method = method
 
 
-    def store(self, data, url, delimiter, overwrite, provider,
+    def store(self, data, path, delimiter, overwrite, provider,
               connection_string, container_name):
         if self.method == 'CSV':
-            self.to_csv(data, url, delimiter)
+            self.to_csv(data, path, delimiter)
         elif self.method == 'JSON':
-            self.to_json(data, url, overwrite)
+            self.to_json(data, path, overwrite)
         elif self.method in ['TXT', 'HTML']:
-            self.to_text_file(data, url)
+            self.to_text_file(data, path)
         elif self.method == ['PDF', 'IMG']:
-            self.to_binary_file(data, url)
+            self.to_binary_file(data, path)
         elif self.method == 'BLOB':
-            self.to_blob(provider, connection_string, container_name, data, url)
+            self.to_blob(provider, connection_string, container_name, data, path)
         elif self.method == 'TABLE':
-            self.to_table(provider, connection_string, data, url)
+            self.to_table(provider, connection_string, data, path)
 
 
-    def to_csv(self, data, url, delimiter):
-        with open(url, 'w', newline='', encoding='utf-8') as output_file:
+    def to_csv(self, data, path, delimiter):
+        with open(path, 'w', newline='', encoding='utf-8') as output_file:
             writer = csv.writer(output_file, delimiter=delimiter)
             for row in data:
                 writer.writerow(row)
 
 
-    def to_json(self, data, url, overwrite):
+    def to_json(self, data, path, overwrite):
         if not overwrite:
-            d = self.load_json(url)
+            d = self.load_json(path)
             data.update(d)
-        with open(url, 'w') as output_file:
+        with open(path, 'w') as output_file:
             json.dump(data, output_file)
 
     
-    def to_binary_file(self, data, url):
+    def to_binary_file(self, data, path):
         '''
         Prints binary data into a binary file (ie. '.pdf').
         '''
-        with open(url, 'wb') as output_file:
+        with open(path, 'wb') as output_file:
             output_file.write(data)
 
 
-    def to_text_file(self, data, url):
+    def to_text_file(self, data, path):
         '''
         Prints text data into a text file (ie. '.txt', '.html').
         '''
@@ -76,18 +76,18 @@ class StoreAdapter():
             blob.upload_blob(data)
 
 
-    def to_table(self, provider, connection_string, data, url):
+    def to_table(self, provider, connection_string, data, path):
         '''
         '''
         if provider == 'azure':
             table = TableServiceClient.from_connection_string(
                 conn_str=connection_string)
-            table_client = table_service_client.get_table_client(table_name=url)
+            table_client = table_service_client.get_table_client(table_name=path)
             for row in data:
                 table_client.create_entity(entity=row)
 
 
-    def load_json(self, url):
-        with open(url, 'r') as input_file:
+    def load_json(self, path):
+        with open(path, 'r') as input_file:
             d = json.load(input_file)
         return d

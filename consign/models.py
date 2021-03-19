@@ -21,7 +21,7 @@ class Consignment():
     '''
 
     def __init__(self,
-        method=None, data=None, url=None, delimiter=None, overwrite=True,
+        method=None, data=None, path=None, delimiter=None, overwrite=True,
         provider=None, connection_string=None, container_name=None):
 
         # Default empty dicts for optional dict params.
@@ -30,7 +30,7 @@ class Consignment():
 
         self.method = method
         self.data = data
-        self.url = url
+        self.path = path
         self.delimiter = delimiter
         self.overwrite = overwrite
         self.provider = provider.strip().lower() if provider
@@ -52,14 +52,14 @@ class PreparedConsignment():
 
 
     def prepare(self,
-        method=None, data=None, url=None, delimiter=None, overwrite=None,
+        method=None, data=None, path=None, delimiter=None, overwrite=None,
         provider=None, connection_string=None, container_name=None):
         '''Prepares the entire consignment with the given parameters.'''
 
         self.prepare_method(method)
         self.prepare_data(data, delimiter)
-        self.prepare_url(url)
-        self.prepare_file(url, overwrite)
+        self.prepare_path(path)
+        self.prepare_file(path, overwrite)
 
         self.prepare_provider(provider)
         self.prepare_connection_string(provider, connection_string)
@@ -187,21 +187,21 @@ class PreparedConsignment():
         self.delimiter = delimiter
 
 
-    def prepare_url(self, url, provider):
+    def prepare_path(self, path, provider):
         '''
         Verifies path existance, user permissions to write, and file extension
         matches the data format.
         '''
         if self.method in ['CSV', 'JSON', 'PDF', 'HTML', 'TXT']:
-            self.prepare_pathname(url)
+            self.prepare_pathname(path)
         elif self.method == 'BLOB':
-            self.prepare_blob_name(provider, url)
+            self.prepare_blob_name(provider, path)
         elif self.method == 'TABLE':
-            self.prepare_table_name(provider, url)
-        self.url = url
+            self.prepare_table_name(provider, path)
+        self.path = path
 
 
-    def prepare_blob_name(self, provider, url):
+    def prepare_blob_name(self, provider, path):
         '''
         As required by Azure in their docs:
         https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#blob-names
@@ -211,10 +211,10 @@ class PreparedConsignment():
             
             BASE_MESSAGE = 'In Azure Storage, '
 
-            if len(url) < 1 or len(url) > 1024:
+            if len(path) < 1 or len(path) > 1024:
                 msg = 'blob names must be from 1 through 1024 characters long.'
             
-            path_segments = url.split('/')
+            path_segments = path.split('/')
             if len(path_segments) > 254:
                 msg = 'the number of path segments comprising the blob name cannot exceed 254.'
 
@@ -222,27 +222,27 @@ class PreparedConsignment():
                 if path_segment.endswith('.'):
                     msg = "blob names' path segments should not end with a dot."
 
-            if url.endswith('/'):
+            if path.endswith('/'):
                 msg = 'blob names should not end with a forward slash.'
         
         if msg: raise InvalidBlobName(BASE_MESSAGE + msg)
 
 
-    def prepare_table_name(self, provider, url):
+    def prepare_table_name(self, provider, path):
         '''
         '''
         msg = None
-        if url and provider == 'azure':
+        if path and provider == 'azure':
             BASE_MESSAGE = 'In Azure Storage, '
             
-            for character in url:
+            for character in path:
                 if not (character.isalpha() or character.isdigit()):
                     msg = 'table names can only contain alphanumeric characters.'
             
-            if url[0].isdigit():
+            if path[0].isdigit():
                 msg = 'table names may not begin with a numeric character.'
             
-            if len(url) < 3 or len(url) > 63:
+            if len(path) < 3 or len(path) > 63:
                 msg = 'table names must be from 3 through 63 characters long.'
 
         if msg: raise InvalidTableName(BASE_MESSAGE + msg)
@@ -365,11 +365,11 @@ class PreparedConsignment():
             return False
 
 
-    def prepare_file(self, url, overwrite):
+    def prepare_file(self, path, overwrite):
         '''
         If file is to be updated, it needs to exist.
         '''
         self.overwrite = True if not overwrite else overwrite
         if not self.overwrite and self.method in ['CSV', 'JSON']:
-            if not isfile(url):
+            if not isfile(path):
                 raise InvalidPath('File to be updated does NOT exist.')
