@@ -6,6 +6,7 @@ from os import path, remove
 from os.path import isfile
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
+from consign.api import json
 from consign.adapters import StoreAdapter
 
 
@@ -28,35 +29,26 @@ class TestStringMethods(unittest.TestCase):
         '''
         Tests that a JSON file gets created.
         '''
-        store = StoreAdapter(method='JSON')
+        data = {}
         test_path = './testing_json.json'
-        store.to_json(
-            data = {},
-            path = test_path,
-            overwrite = self.overwrite
-        )
+        json(data, test_path)
         self.assertTrue(isfile(test_path))
 
 
     def test_json_update(self):
         '''
-        Tests that the created-for-testing-purposes JSON file gets updated.
+        Tests that a JSON file gets updated.
         '''
-        store = StoreAdapter(method='JSON')
+        data = {}
         test_path = './testing_json.json'
-        store.to_json(
-            data = {},
-            path = test_path,
-            overwrite = self.overwrite
-        )
-        test_data = {'update_test': True}
-        store.to_json(
-            data = test_data,
-            path = test_path,
-            overwrite = False
-        )
+        json(data, test_path)
+
+        updated_data = {'update_test': True}
+        json(updated_data, test_path, overwrite=False)
+
+        store = StoreAdapter(method='JSON')
         d = store.load_json(test_path)
-        self.assertEqual(d, test_data)
+        self.assertEqual(d, updated_data)
 
 
     def tearDown(self):
