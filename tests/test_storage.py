@@ -1,12 +1,10 @@
 import sys
-from os import path
-sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-
 import unittest
 import TestRunner
 
-from os import remove
+from os import path, remove
 from os.path import isfile
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 from consign.adapters import StoreAdapter
 
@@ -61,7 +59,7 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(d, test_data)
 
 
-    def cleanUp(self):
+    def tearDown(self):
         try: remove('./testing_json.json')
         except: pass
 
