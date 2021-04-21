@@ -149,7 +149,9 @@ class PreparedConsignment():
         
         elif self.method == 'JSON':
             self.prepare_json(data)
-
+        
+        else: # @TODO: Add validations for binary files, blobs, etc.
+            self.data = data
 
     def prepare_json(self, data):
         '''Verifies data is valid JSON.
