@@ -59,7 +59,7 @@ class StoreAdapter():
         '''
         Prints text data into a text file (ie. '.txt', '.html').
         '''
-        with open(output_path, 'w') as output_file:
+        with open(path, 'w') as output_file:
             output_file.write(data)
 
 
