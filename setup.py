@@ -8,7 +8,7 @@ packages = ['consign']
 
 requires = [
     'azure-storage-blob>=12.8.0',
-    'azure-data-tables>=12.0.0'
+    'azure-data-tables>=12.0.0b5'
 ]
 
 about = {}
