@@ -30,13 +30,18 @@ class Session():
             data=consign.data,
             path=consign.path,
             delimiter=consign.delimiter,
-            overwrite=consign.overwrite
+            overwrite=consign.overwrite,
+            initialize=consign.initialize,
+            provider=consign.provider,
+            connection_string=consign.connection_string,
+            container_name=consign.container_name
         )
         return p
 
 
     def consign(self, method, data, path, delimiter=None, overwrite=True,
-                provider=None, connection_string=None, container_name=None):
+                initialize=False, provider=None, connection_string=None,
+                container_name=None):
         '''Constructs a :class:`Consign <Consign>`, prepares it and stores it.
         '''
 
@@ -47,6 +52,7 @@ class Session():
             path=path,
             delimiter=delimiter,
             overwrite=overwrite,
+            initialize=initialize,
             provider=provider,
             connection_string=connection_string,
             container_name=container_name
@@ -80,6 +86,7 @@ class Session():
             delimiter=luggage.delimiter,
             overwrite=luggage.overwrite,
             provider=luggage.provider,
+            initialize=luggage.initialize,
             connection_string=luggage.connection_string,
             container_name=luggage.container_name
         )
