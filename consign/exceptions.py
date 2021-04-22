@@ -15,6 +15,10 @@ class InvalidPath(ValueError):
     '''The path provided was somehow invalid.'''
 
 
+class InvalidPermissions(ValueError):
+    '''The user has invalid permission to write in the provided path.'''
+
+
 class InvalidCloudProvider(ValueError):
     '''The given cloud provider was not listed or was somehow invalid.'''
 
