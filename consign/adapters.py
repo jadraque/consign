@@ -1,6 +1,9 @@
 import csv
 import json
 
+from os import makedirs
+from os.path import exists
+
 # https://pypi.org/project/azure-storage-blob/
 from azure.storage.blob import BlobClient
 # https://pypi.org/project/azure-data-tables/
@@ -16,20 +19,32 @@ class StoreAdapter():
         self.method = method
 
 
-    def store(self, data, path, delimiter, overwrite, provider,
+    def store(self, data, path, delimiter, overwrite, initialize, provider,
               connection_string, container_name):
         if self.method == 'CSV':
+            self.initialize_path(path)
             self.to_csv(data, path, delimiter)
         elif self.method == 'JSON':
+            self.initialize_path(path)
             self.to_json(data, path, overwrite)
         elif self.method in ['TXT', 'HTML']:
+            self.initialize_path(path)
             self.to_text_file(data, path)
         elif self.method == ['PDF', 'IMG']:
+            self.initialize_path(path)
             self.to_binary_file(data, path)
         elif self.method == 'BLOB':
             self.to_blob(provider, connection_string, container_name, data, path)
         elif self.method == 'TABLE':
             self.to_table(provider, connection_string, data, path)
+
+
+    def initialize_path(self, path):
+        '''
+        '''
+        directory_path = "/".join(path.split("/")[:-1])
+        if not exists(directory_path):
+            makedirs(directory_path)
 
 
     def to_csv(self, data, path, delimiter):
@@ -59,7 +74,7 @@ class StoreAdapter():
         '''
         Prints text data into a text file (ie. '.txt', '.html').
         '''
-        with open(output_path, 'w') as output_file:
+        with open(path, 'w') as output_file:
             output_file.write(data)
 
 
