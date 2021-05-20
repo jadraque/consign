@@ -199,7 +199,7 @@ class PreparedConsignment():
         Verifies path existance, user permissions to write, and file extension
         matches the data format.
         '''
-        if self.method in ['CSV', 'JSON', 'PDF', 'HTML', 'TXT']:
+        if self.method in ['CSV', 'JSON', 'PDF', 'HTML', 'TXT', 'IMG']:
             self.prepare_file_path(path, initialize)
         elif self.method == 'BLOB':
             self.prepare_blob_name(path, provider)
