@@ -21,17 +21,14 @@ class StoreAdapter():
 
     def store(self, data, path, delimiter, overwrite, initialize, provider,
               connection_string, container_name):
+        if initialize: self.initialize_path(path)
         if self.method == 'CSV':
-            self.initialize_path(path)
             self.to_csv(data, path, delimiter)
         elif self.method == 'JSON':
-            self.initialize_path(path)
             self.to_json(data, path, overwrite)
         elif self.method in ['TXT', 'HTML']:
-            self.initialize_path(path)
             self.to_text_file(data, path)
-        elif self.method == ['PDF', 'IMG']:
-            self.initialize_path(path)
+        elif self.method in ['PDF', 'IMG']:
             self.to_binary_file(data, path)
         elif self.method == 'BLOB':
             self.to_blob(provider, connection_string, container_name, data, path)
