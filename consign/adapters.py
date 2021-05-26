@@ -23,7 +23,7 @@ class StoreAdapter():
               connection_string, container_name):
         if initialize: self.initialize_path(path)
         if self.method == 'CSV':
-            self.to_csv(data, path, delimiter)
+            self.to_csv(data, path, delimiter, overwrite)
         elif self.method == 'JSON':
             self.to_json(data, path, overwrite)
         elif self.method in ['TXT', 'HTML']:
@@ -44,8 +44,9 @@ class StoreAdapter():
             makedirs(directory_path)
 
 
-    def to_csv(self, data, path, delimiter):
-        with open(path, 'w', newline='', encoding='utf-8') as output_file:
+    def to_csv(self, data, path, delimiter, overwrite):
+        write_mode = 'w' if overwrite else 'a'
+        with open(path, write_mode, newline='', encoding='utf-8') as output_file:
             writer = csv.writer(output_file, delimiter=delimiter)
             for row in data:
                 writer.writerow(row)
